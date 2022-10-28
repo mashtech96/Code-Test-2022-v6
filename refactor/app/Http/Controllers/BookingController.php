@@ -35,17 +35,18 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
-        if($user_id = $request->get('user_id')) {
+        try {
+            if ($user_id = $request->get('user_id')) {
 
-            $response = $this->repository->getUsersJobs($user_id);
-
+                $response = $this->repository->getUsersJobs($user_id);
+            } elseif ($request->__authenticatedUser->user_type == env('ADMIN_ROLE_ID') || $request->__authenticatedUser->user_type == env('SUPERADMIN_ROLE_ID')) {
+                $response = $this->repository->getAll($request);
+            }
+            return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
         }
-        elseif($request->__authenticatedUser->user_type == env('ADMIN_ROLE_ID') || $request->__authenticatedUser->user_type == env('SUPERADMIN_ROLE_ID'))
-        {
-            $response = $this->repository->getAll($request);
-        }
-
-        return response($response);
     }
 
     /**
@@ -54,9 +55,14 @@ class BookingController extends Controller
      */
     public function show($id)
     {
-        $job = $this->repository->with('translatorJobRel.user')->find($id);
+        try {
+            $job = $this->repository->with('translatorJobRel.user')->find($id);
 
-        return response($job);
+            return succesResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"), $job);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     /**
@@ -65,12 +71,18 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
 
-        $response = $this->repository->store($request->__authenticatedUser, $data);
+            $response = $this->repository->store($request->__authenticatedUser, $data);
 
-        return response($response);
-
+            return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     /**
@@ -80,11 +92,18 @@ class BookingController extends Controller
      */
     public function update($id, Request $request)
     {
-        $data = $request->all();
-        $cuser = $request->__authenticatedUser;
-        $response = $this->repository->updateJob($id, array_except($data, ['_token', 'submit']), $cuser);
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
+            $cuser = $request->__authenticatedUser;
+            $response = $this->repository->updateJob($id, array_except($data, ['_token', 'submit']), $cuser);
 
-        return response($response);
+            return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     /**
@@ -93,12 +112,19 @@ class BookingController extends Controller
      */
     public function immediateJobEmail(Request $request)
     {
-        $adminSenderEmail = config('app.adminemail');
-        $data = $request->all();
+        try {
+            $adminSenderEmail = config('app.adminemail');
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
 
-        $response = $this->repository->storeJobEmail($data);
+            $response = $this->repository->storeJobEmail($data);
 
-        return response($response);
+            return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     /**
@@ -107,13 +133,18 @@ class BookingController extends Controller
      */
     public function getHistory(Request $request)
     {
-        if($user_id = $request->get('user_id')) {
+        try {
+            ini_set('max_execution_time', 0);
+            if ($user_id = $request->get('user_id')) {
 
-            $response = $this->repository->getUsersJobsHistory($user_id, $request);
-            return response($response);
+                $response = $this->repository->getUsersJobsHistory($user_id, $request);
+                return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"), $response);
+            }
+            return errorResponse(null);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
         }
-
-        return null;
     }
 
     /**
@@ -122,22 +153,34 @@ class BookingController extends Controller
      */
     public function acceptJob(Request $request)
     {
-        $data = $request->all();
-        $user = $request->__authenticatedUser;
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
+            $user = $request->__authenticatedUser;
 
-        $response = $this->repository->acceptJob($data, $user);
+            $response = $this->repository->acceptJob($data, $user);
 
-        return response($response);
+            return successResponse($response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     public function acceptJobWithId(Request $request)
     {
-        $data = $request->get('job_id');
-        $user = $request->__authenticatedUser;
+        try {
+            $data = $request->get('job_id');
+            $user = $request->__authenticatedUser;
 
-        $response = $this->repository->acceptJobWithId($data, $user);
+            $response = $this->repository->acceptJobWithId($data, $user);
 
-        return response($response);
+            return successResponse(config("constants.ERROR_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     /**
@@ -146,12 +189,19 @@ class BookingController extends Controller
      */
     public function cancelJob(Request $request)
     {
-        $data = $request->all();
-        $user = $request->__authenticatedUser;
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
+            $user = $request->__authenticatedUser;
 
-        $response = $this->repository->cancelJobAjax($data, $user);
+            $response = $this->repository->cancelJobAjax($data, $user);
 
-        return response($response);
+            return successResponse(config("constants.SUCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     /**
@@ -160,22 +210,34 @@ class BookingController extends Controller
      */
     public function endJob(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
 
-        $response = $this->repository->endJob($data);
+            $response = $this->repository->endJob($data);
 
-        return response($response);
-
+            return successResponse(config("constants.SUCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     public function customerNotCall(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
 
-        $response = $this->repository->customerNotCall($data);
+            $response = $this->repository->customerNotCall($data);
 
-        return response($response);
-
+            return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     /**
@@ -184,92 +246,117 @@ class BookingController extends Controller
      */
     public function getPotentialJobs(Request $request)
     {
-        $data = $request->all();
-        $user = $request->__authenticatedUser;
+        try {
+            ini_set('max_execution_time', 0);
+            $user = $request->__authenticatedUser;
 
-        $response = $this->repository->getPotentialJobs($user);
+            $response = $this->repository->getPotentialJobs($user);
 
-        return response($response);
+            return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     public function distanceFeed(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
 
-        if (isset($data['distance']) && $data['distance'] != "") {
-            $distance = $data['distance'];
-        } else {
-            $distance = "";
-        }
-        if (isset($data['time']) && $data['time'] != "") {
-            $time = $data['time'];
-        } else {
-            $time = "";
-        }
-        if (isset($data['jobid']) && $data['jobid'] != "") {
-            $jobid = $data['jobid'];
-        }
+            if (isset($data['distance']) && $data['distance'] != "") {
+                $distance = $data['distance'];
+            } else {
+                $distance = "";
+            }
+            if (isset($data['time']) && $data['time'] != "") {
+                $time = $data['time'];
+            } else {
+                $time = "";
+            }
+            if (isset($data['jobid']) && $data['jobid'] != "") {
+                $jobid = $data['jobid'];
+            }
 
-        if (isset($data['session_time']) && $data['session_time'] != "") {
-            $session = $data['session_time'];
-        } else {
-            $session = "";
+            if (isset($data['session_time']) && $data['session_time'] != "") {
+                $session = $data['session_time'];
+            } else {
+                $session = "";
+            }
+
+            if ($data['flagged'] == 'true') {
+                if ($data['admincomment'] == '') return "Please, add comment";
+                $flagged = 'yes';
+            } else {
+                $flagged = 'no';
+            }
+
+            if ($data['manually_handled'] == 'true') {
+                $manually_handled = 'yes';
+            } else {
+                $manually_handled = 'no';
+            }
+
+            if ($data['by_admin'] == 'true') {
+                $by_admin = 'yes';
+            } else {
+                $by_admin = 'no';
+            }
+
+            if (isset($data['admincomment']) && $data['admincomment'] != "") {
+                $admincomment = $data['admincomment'];
+            } else {
+                $admincomment = "";
+            }
+            if ($time || $distance) {
+
+                $affectedRows = Distance::where('job_id', '=', $jobid)->update(array('distance' => $distance, 'time' => $time));
+            }
+
+            if ($admincomment || $session || $flagged || $manually_handled || $by_admin) {
+
+                $affectedRows1 = Job::where('id', '=', $jobid)->update(array('admin_comments' => $admincomment, 'flagged' => $flagged, 'session_time' => $session, 'manually_handled' => $manually_handled, 'by_admin' => $by_admin));
+            }
+
+            return successResponse(config("constants.SUCESS_TO_KEY_TO_GIVE"), []);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
         }
-
-        if ($data['flagged'] == 'true') {
-            if($data['admincomment'] == '') return "Please, add comment";
-            $flagged = 'yes';
-        } else {
-            $flagged = 'no';
-        }
-        
-        if ($data['manually_handled'] == 'true') {
-            $manually_handled = 'yes';
-        } else {
-            $manually_handled = 'no';
-        }
-
-        if ($data['by_admin'] == 'true') {
-            $by_admin = 'yes';
-        } else {
-            $by_admin = 'no';
-        }
-
-        if (isset($data['admincomment']) && $data['admincomment'] != "") {
-            $admincomment = $data['admincomment'];
-        } else {
-            $admincomment = "";
-        }
-        if ($time || $distance) {
-
-            $affectedRows = Distance::where('job_id', '=', $jobid)->update(array('distance' => $distance, 'time' => $time));
-        }
-
-        if ($admincomment || $session || $flagged || $manually_handled || $by_admin) {
-
-            $affectedRows1 = Job::where('id', '=', $jobid)->update(array('admin_comments' => $admincomment, 'flagged' => $flagged, 'session_time' => $session, 'manually_handled' => $manually_handled, 'by_admin' => $by_admin));
-
-        }
-
-        return response('Record updated!');
     }
 
     public function reopen(Request $request)
     {
-        $data = $request->all();
-        $response = $this->repository->reopen($data);
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
+            $response = $this->repository->reopen($data);
 
-        return response($response);
+            return successResponse(config("constants.SUCESS_TO_KEY_TO_GIVE"), $response);
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     public function resendNotifications(Request $request)
     {
-        $data = $request->all();
-        $job = $this->repository->find($data['jobid']);
-        $job_data = $this->repository->jobToData($job);
-        $this->repository->sendNotificationTranslator($job, $job_data, '*');
+        try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
+            $job = $this->repository->find($data['jobid']);
+            $job_data = $this->repository->jobToData($job);
+            $this->repository->sendNotificationTranslator($job, $job_data, '*');
 
-        return response(['success' => 'Push sent']);
+            return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"));
+        } catch (\Exception $e) {
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
+        }
     }
 
     /**
@@ -279,16 +366,18 @@ class BookingController extends Controller
      */
     public function resendSMSNotifications(Request $request)
     {
-        $data = $request->all();
-        $job = $this->repository->find($data['jobid']);
-        $job_data = $this->repository->jobToData($job);
-
         try {
+            $data        = array();
+            $data['abc'] =  $request->get('abc');
+            $data['xyz'] =  $request->get('xyz');
+
+            $job = $this->repository->find($data['jobid']);
+            $job_data = $this->repository->jobToData($job);
             $this->repository->sendSMSNotificationToTranslator($job);
-            return response(['success' => 'SMS sent']);
+            return successResponse(config("constants.SUCCESS_TO_KEY_TO_GIVE"));
         } catch (\Exception $e) {
-            return response(['success' => $e->getMessage()]);
+            //or $e->getMessage() if you want to get exact error
+            return errorResponse(config("constants.ERROR_TO_KEY_TO_GIVE"));
         }
     }
-
 }
